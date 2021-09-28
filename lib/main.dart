@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, unrelated_type_equality_checks
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cinemaapp/apiservice.dart';
@@ -5,9 +7,15 @@ import 'package:cinemaapp/models/movie.dart';
 
 import 'package:flutter/material.dart';
 
+import 'models/genre.dart';
+
 void main() {
   runApp(const MyApp());
 }
+
+ApiService apiService = ApiService();
+ValueNotifier valueNotifier = ValueNotifier(0);
+int? selectedGenre = 28;
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -21,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(brightness: Brightness.dark),
+        theme: ThemeData(brightness: Brightness.light),
         title: 'CinemaApp',
         home: Scaffold(
             appBar: AppBar(
@@ -57,8 +65,53 @@ class _MyAppState extends State<MyApp> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Column(
-                            children: [KappaWidget()],
-                          )
+                            children: [
+                              KappaWidget(),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              GenreWidget(),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Container(
+                                  padding: EdgeInsets.only(left: 15),
+                                  alignment: Alignment.bottomLeft,
+                                  child: Text(
+                                    "Now Showing".toUpperCase(),
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black45),
+                                  )),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              GenreShowcase(),
+                              Container(
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(
+                                          color: Colors.black45, width: 1),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  height: 40,
+                                  width: 120,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Text("Buy Ticket",
+                                          style:
+                                              TextStyle(color: Colors.black45)),
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 8.0),
+                                        child: Icon(Icons.movie_creation,
+                                            color: Colors.black45),
+                                      )
+                                    ],
+                                  )),
+                            ],
+                          ),
                         ],
                       )));
             })));
@@ -73,8 +126,6 @@ class KappaWidget extends StatefulWidget {
 }
 
 class _KappaWidgetState extends State<KappaWidget> {
-  ApiService apiService = ApiService();
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Movie>>(
@@ -101,7 +152,7 @@ class _KappaWidgetState extends State<KappaWidget> {
                         child: CachedNetworkImage(
                           imageUrl:
                               'https://image.tmdb.org/t/p/original${movie.backdropPath}',
-                          height: MediaQuery.of(context).size.height / 3,
+                          height: 200,
                           width: MediaQuery.of(context).size.width,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
@@ -124,5 +175,200 @@ class _KappaWidgetState extends State<KappaWidget> {
                 });
           }
         });
+  }
+}
+
+class GenreWidget extends StatefulWidget {
+  const GenreWidget({Key? key}) : super(key: key);
+
+  @override
+  _GenreWidgetState createState() => _GenreWidgetState();
+}
+
+class _GenreWidgetState extends State<GenreWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Genre>>(
+        future: apiService.getGenreList(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            List<Genre> genres = snapshot.data!;
+            return Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 35,
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) => VerticalDivider(
+                          color: Colors.transparent,
+                          width: 5,
+                        ),
+                        itemCount: snapshot.data!.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          Genre genre = genres[index];
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedGenre = genre.id;
+                                    valueNotifier.value++;
+                                  });
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.black45),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(25)),
+                                    color: (genre.id == selectedGenre)
+                                        ? Colors.black45
+                                        : Colors.white,
+                                  ),
+                                  child: Text(
+                                    genre.name!.toUpperCase(),
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: (genre.id == selectedGenre)
+                                            ? Colors.white
+                                            : Colors.black45),
+                                  ),
+                                ),
+                              )
+                            ],
+                          );
+                        },
+                      ),
+                    )
+                  ]),
+            );
+          }
+        });
+  }
+}
+
+class GenreShowcase extends StatefulWidget {
+  const GenreShowcase({Key? key}) : super(key: key);
+
+  @override
+  _GenreShowcaseState createState() => _GenreShowcaseState();
+}
+
+class _GenreShowcaseState extends State<GenreShowcase> {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: valueNotifier,
+      builder: (context, child, value) => FutureBuilder<List<Movie>>(
+          future: apiService.getMoviesByGenre(selectedGenre!),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              List<Movie> movielist = snapshot.data!;
+
+              return Container(
+                  padding: EdgeInsets.only(left: 10),
+                  height: 200,
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => VerticalDivider(
+                      color: Colors.transparent,
+                      width: 8,
+                    ),
+                    itemCount: movielist.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      Movie movie = movielist[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://image.tmdb.org/t/p/original${movie.backdropPath}',
+                              imageBuilder: (context, imageProvider) {
+                                return Container(
+                                  width: 100,
+                                  height: 150,
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(12)),
+                                      image: DecorationImage(
+                                          image: imageProvider,
+                                          fit: BoxFit.cover)),
+                                );
+                              },
+                              placeholder: (context, url) => SizedBox(
+                                width: 100,
+                                height: 150,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              movie.title!.toUpperCase(),
+                              style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black45,
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ),
+                          Container(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Text(
+                                  '${movie.voteAverage}',
+                                  style: TextStyle(
+                                      color: Colors.black45, fontSize: 10),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  ));
+            }
+          }),
+    );
   }
 }
