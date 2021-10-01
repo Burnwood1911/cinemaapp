@@ -2,10 +2,14 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cinemaapp/models/movie_images.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
 import 'package:cinemaapp/apiservice.dart';
 import 'package:cinemaapp/models/movie.dart';
-
-import 'package:flutter/material.dart';
+import 'package:cinemaapp/models/movie_detail.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'models/genre.dart';
 
@@ -132,7 +136,9 @@ class _KappaWidgetState extends State<KappaWidget> {
         future: apiService.getTopRatedMovies(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Container(
+                height: 200,
+                child: const Center(child: CupertinoActivityIndicator()));
           } else {
             return CarouselSlider.builder(
                 options: CarouselOptions(
@@ -148,17 +154,27 @@ class _KappaWidgetState extends State<KappaWidget> {
                   return Stack(
                     alignment: Alignment.bottomLeft,
                     children: [
-                      ClipRRect(
-                        child: CachedNetworkImage(
-                          imageUrl:
-                              'https://image.tmdb.org/t/p/original${movie.backdropPath}',
-                          height: 200,
-                          width: MediaQuery.of(context).size.width,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MovieDetalView(
+                                        movieId: movie.id!,
+                                      )));
+                        },
+                        child: ClipRRect(
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                'https://image.tmdb.org/t/p/original${movie.backdropPath}',
+                            height: 200,
+                            width: MediaQuery.of(context).size.width,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(
+                                child: CupertinoActivityIndicator()),
+                          ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        borderRadius: BorderRadius.circular(10),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 15, left: 15),
@@ -192,7 +208,9 @@ class _GenreWidgetState extends State<GenreWidget> {
         future: apiService.getGenreList(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Container(
+                height: 35,
+                child: const Center(child: CupertinoActivityIndicator()));
           } else {
             List<Genre> genres = snapshot.data!;
             return Padding(
@@ -269,7 +287,9 @@ class _GenreShowcaseState extends State<GenreShowcase> {
           future: apiService.getMoviesByGenre(selectedGenre!),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Container(
+                  height: 200,
+                  child: const Center(child: CupertinoActivityIndicator()));
             } else {
               List<Movie> movielist = snapshot.data!;
 
@@ -288,27 +308,37 @@ class _GenreShowcaseState extends State<GenreShowcase> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ClipRRect(
-                            child: CachedNetworkImage(
-                              imageUrl:
-                                  'https://image.tmdb.org/t/p/original${movie.backdropPath}',
-                              imageBuilder: (context, imageProvider) {
-                                return Container(
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => MovieDetalView(
+                                            movieId: movie.id!,
+                                          )));
+                            },
+                            child: ClipRRect(
+                              child: CachedNetworkImage(
+                                imageUrl:
+                                    'https://image.tmdb.org/t/p/original${movie.backdropPath}',
+                                imageBuilder: (context, imageProvider) {
+                                  return Container(
+                                    width: 100,
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(12)),
+                                        image: DecorationImage(
+                                            image: imageProvider,
+                                            fit: BoxFit.cover)),
+                                  );
+                                },
+                                placeholder: (context, url) => SizedBox(
                                   width: 100,
                                   height: 150,
-                                  decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(12)),
-                                      image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover)),
-                                );
-                              },
-                              placeholder: (context, url) => SizedBox(
-                                width: 100,
-                                height: 150,
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                                  child: Center(
+                                    child: CupertinoActivityIndicator(),
+                                  ),
                                 ),
                               ),
                             ),
@@ -327,41 +357,39 @@ class _GenreShowcaseState extends State<GenreShowcase> {
                                   overflow: TextOverflow.ellipsis),
                             ),
                           ),
-                          Container(
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 12,
-                                ),
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 12,
-                                ),
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 12,
-                                ),
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 12,
-                                ),
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 12,
-                                ),
-                                Text(
-                                  '${movie.voteAverage}',
-                                  style: TextStyle(
-                                      color: Colors.black45, fontSize: 10),
-                                )
-                              ],
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 12,
+                              ),
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 12,
+                              ),
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 12,
+                              ),
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 12,
+                              ),
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 12,
+                              ),
+                              Text(
+                                '${movie.voteAverage}',
+                                style: TextStyle(
+                                    color: Colors.black45, fontSize: 10),
+                              )
+                            ],
                           )
                         ],
                       );
@@ -369,6 +397,340 @@ class _GenreShowcaseState extends State<GenreShowcase> {
                   ));
             }
           }),
+    );
+  }
+}
+
+class MovieDetalView extends StatefulWidget {
+  final int movieId;
+  const MovieDetalView({
+    Key? key,
+    required this.movieId,
+  }) : super(key: key);
+
+  //const MovieDetalView({Key? key}) : super(key: key);
+
+  @override
+  _MovieDetalViewState createState() => _MovieDetalViewState();
+}
+
+class _MovieDetalViewState extends State<MovieDetalView> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<MovieDetail>(
+        future: apiService.movieDetail(widget.movieId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+                color: Colors.white,
+                child: const Center(child: CupertinoActivityIndicator()));
+          } else {
+            debugPrint('Received Movie id: ${widget.movieId}');
+            MovieDetail movieDetail = snapshot.data!;
+            return Scaffold(
+              body: Stack(
+                children: [
+                  ClipPath(
+                    child: ClipRRect(
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            'https://image.tmdb.org/t/p/original${movieDetail.backdropPath}',
+                        height: MediaQuery.of(context).size.height / 2.5,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            CupertinoActivityIndicator(),
+                      ),
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(30),
+                          bottomRight: Radius.circular(30)),
+                    ),
+                  ),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppBar(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(top: 25),
+                          child: GestureDetector(
+                            onTap: () async {
+                              final youtueUrl =
+                                  'https://www.youtube.com/embed/${movieDetail.trailerId}';
+
+                              if (await canLaunch(youtueUrl)) {
+                                await launch(youtueUrl);
+                              }
+                            },
+                            child: Center(
+                              child: Column(
+                                children: const [
+                                  Icon(
+                                    Icons.play_circle_outline,
+                                    color: Colors.yellow,
+                                    size: 65,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 90,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text("OVERVIEW",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: Colors.black45))
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              SizedBox(
+                                  height: 35,
+                                  child: Text(
+                                    movieDetail.overview!,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  )),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "RELEASE DATE",
+                                        style: TextStyle(color: Colors.black45),
+                                      ),
+                                      Text(
+                                        movieDetail.releaseDate!,
+                                        style: TextStyle(
+                                            color: Colors.yellow[800]),
+                                      )
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "RUNTIME",
+                                        style: TextStyle(color: Colors.black45),
+                                      ),
+                                      Text(
+                                        '${movieDetail.runtime!.toString()} MINS',
+                                        style: TextStyle(
+                                            color: Colors.yellow[800]),
+                                      )
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "BUDGET",
+                                        style: TextStyle(color: Colors.black45),
+                                      ),
+                                      Text(
+                                        movieDetail.budget!.toString(),
+                                        style: TextStyle(
+                                            color: Colors.yellow[800]),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Rated-R: ${movieDetail.adult! ? 'YES' : 'NO'}',
+                                    style: TextStyle(color: Colors.black45),
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                ],
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text("SREENSHOTS"),
+                              FutureBuilder<List<Backdrops>>(
+                                  future:
+                                      apiService.movieImages(widget.movieId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                          child: CupertinoActivityIndicator());
+                                    } else {
+                                      List<Backdrops> backs = snapshot.data!;
+                                      return Container(
+                                          height: 155,
+                                          child: ListView.separated(
+                                              scrollDirection: Axis.horizontal,
+                                              separatorBuilder: (context,
+                                                      index) =>
+                                                  VerticalDivider(
+                                                      color: Colors.transparent,
+                                                      width: 5),
+                                              itemCount: backs.length,
+                                              itemBuilder: (context, index) =>
+                                                  Container(
+                                                    child: Card(
+                                                        elevation: 3,
+                                                        borderOnForeground:
+                                                            true,
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12)),
+                                                        child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                            child:
+                                                                CachedNetworkImage(
+                                                              imageUrl:
+                                                                  'https://image.tmdb.org/t/p/w500${backs[index].filePath}',
+                                                              placeholder: (context,
+                                                                      url) =>
+                                                                  Center(
+                                                                      child:
+                                                                          CupertinoActivityIndicator()),
+                                                              fit: BoxFit.cover,
+                                                            ))),
+                                                  )));
+                                    }
+                                  }),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 100, vertical: 10),
+                          child: OutlinedButton(
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(
+                                      Colors.yellow[800])),
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            SeatSelectorView()));
+                              },
+                              child: Row(
+                                children: const [
+                                  Text("Get Your Ticket"),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Icon(Icons.movie_rounded)
+                                ],
+                              )),
+                        )
+                      ])
+                ],
+              ),
+            );
+          }
+        });
+  }
+}
+
+class SeatSelectorView extends StatefulWidget {
+  const SeatSelectorView({Key? key}) : super(key: key);
+
+  @override
+  _SeatSelectorViewState createState() => _SeatSelectorViewState();
+}
+
+class _SeatSelectorViewState extends State<SeatSelectorView> {
+  // final List<Map> myProducts =
+  //     List.generate(18, (index) => {"id": index, "name": "${index + 1}"})
+  //         .toList();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Choose A Seat".toUpperCase(),
+            style: TextStyle(color: Colors.black45)),
+        backgroundColor: Colors.transparent,
+        centerTitle: true,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black87),
+      ),
+      body: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.white,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                children: const [
+                  Text("A"),
+                  Text("B"),
+                  Text("C"),
+                  Text("D"),
+                  Text("E"),
+                  Text("F"),
+                  Text("G"),
+                  Text("H"),
+                  Text("G"),
+                ],
+              ),
+              Column(
+                children: [
+                  GridView.count(
+                      crossAxisSpacing: 0,
+                      shrinkWrap: true,
+                      crossAxisCount: 18,
+                      mainAxisSpacing: 5,
+                      children: List.generate(
+                          252,
+                          (index) => Center(
+                                child: Container(
+                                    alignment: Alignment.center,
+                                    width: 13,
+                                    height: 13,
+                                    color: Colors.blue,
+                                    child: Text(
+                                      '$index',
+                                      style: TextStyle(fontSize: 10),
+                                    )),
+                              ))),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
