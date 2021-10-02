@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
               ),
               centerTitle: true,
               title: const Text(
-                "CINEMA",
+                "COMING SOON",
                 style: TextStyle(
                     color: Colors.black54,
                     fontSize: 20,
@@ -478,7 +478,7 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                           ),
                         ),
                         SizedBox(
-                          height: 90,
+                          height: 100,
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 12),
@@ -523,7 +523,8 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                       Text(
                                         movieDetail.releaseDate!,
                                         style: TextStyle(
-                                            color: Colors.yellow[800]),
+                                            color: Color.fromRGBO(
+                                                232, 22, 103, 75)),
                                       )
                                     ],
                                   ),
@@ -538,7 +539,8 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                       Text(
                                         '${movieDetail.runtime!.toString()} MINS',
                                         style: TextStyle(
-                                            color: Colors.yellow[800]),
+                                            color: Color.fromRGBO(
+                                                232, 22, 103, 75)),
                                       )
                                     ],
                                   ),
@@ -551,9 +553,10 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                         style: TextStyle(color: Colors.black45),
                                       ),
                                       Text(
-                                        movieDetail.budget!.toString(),
+                                        '\$${movieDetail.budget!.toString()}',
                                         style: TextStyle(
-                                            color: Colors.yellow[800]),
+                                            color: Color.fromRGBO(
+                                                232, 22, 103, 75)),
                                       )
                                     ],
                                   ),
@@ -562,15 +565,16 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                               SizedBox(
                                 height: 5,
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    'Rated-R: ${movieDetail.adult! ? 'YES' : 'NO'}',
-                                    style: TextStyle(color: Colors.black45),
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                ],
-                              ),
+                              // Row(
+                              //   children: [
+                              //     Text(
+                              //       'Rated-R: ${movieDetail.adult! ? 'YES' : 'NO'}',
+                              //       style:
+                              //           TextStyle(color: Colors.purpleAccent),
+                              //       overflow: TextOverflow.ellipsis,
+                              //     )
+                              //   ],
+                              // ),
                               SizedBox(
                                 height: 10,
                               ),
@@ -585,7 +589,7 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                           child: CupertinoActivityIndicator());
                                     } else {
                                       List<Backdrops> backs = snapshot.data!;
-                                      return Container(
+                                      return SizedBox(
                                           height: 155,
                                           child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
@@ -596,7 +600,16 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                                       width: 5),
                                               itemCount: backs.length,
                                               itemBuilder: (context, index) =>
-                                                  Container(
+                                                  GestureDetector(
+                                                    onLongPress: () async {
+                                                      final screenUrl =
+                                                          'https://image.tmdb.org/t/p/w500${backs[index].filePath}';
+
+                                                      if (await canLaunch(
+                                                          screenUrl)) {
+                                                        await launch(screenUrl);
+                                                      }
+                                                    },
                                                     child: Card(
                                                         elevation: 3,
                                                         borderOnForeground:
@@ -628,30 +641,35 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                             ],
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 100, vertical: 10),
-                          child: OutlinedButton(
-                              style: ButtonStyle(
-                                  foregroundColor: MaterialStateProperty.all(
-                                      Colors.yellow[800])),
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            SeatSelectorView()));
-                              },
+                        Expanded(child: Container()),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SeatSelectorView()));
+                          },
+                          child: Container(
+                              alignment: Alignment.center,
+                              height: 60,
+                              color: Color.fromRGBO(232, 22, 103, 60),
                               child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
-                                  Text("Get Your Ticket"),
+                                  Text("Book Your Seat",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)),
                                   SizedBox(
                                     width: 5,
                                   ),
-                                  Icon(Icons.movie_rounded)
+                                  Icon(
+                                    Icons.chair,
+                                    color: Colors.white,
+                                  )
                                 ],
                               )),
-                        )
+                        ),
                       ])
                 ],
               ),
@@ -672,65 +690,310 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
   // final List<Map> myProducts =
   //     List.generate(18, (index) => {"id": index, "name": "${index + 1}"})
   //         .toList();
+
+  bool isReserved = false;
+
+  bool isSelected = false;
+
+  int selectedIndex = 0;
+
+  int seatsNum = 0;
+  int price = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Choose A Seat".toUpperCase(),
-            style: TextStyle(color: Colors.black45)),
+        title: Text("Choose Seats".toUpperCase(),
+            style: TextStyle(color: Color.fromRGBO(55, 32, 131, 20))),
         backgroundColor: Colors.transparent,
         centerTitle: true,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: Color.fromRGBO(55, 32, 131, 20)),
       ),
-      body: SafeArea(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          color: Colors.white,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: const [
-                  Text("A"),
-                  Text("B"),
-                  Text("C"),
-                  Text("D"),
-                  Text("E"),
-                  Text("F"),
-                  Text("G"),
-                  Text("H"),
-                  Text("G"),
-                ],
-              ),
-              Column(
-                children: [
-                  GridView.count(
-                      crossAxisSpacing: 0,
-                      shrinkWrap: true,
-                      crossAxisCount: 18,
-                      mainAxisSpacing: 5,
-                      children: List.generate(
-                          252,
-                          (index) => Center(
-                                child: Container(
-                                    alignment: Alignment.center,
-                                    width: 13,
-                                    height: 13,
-                                    color: Colors.blue,
-                                    child: Text(
-                                      '$index',
-                                      style: TextStyle(fontSize: 10),
-                                    )),
-                              ))),
-                ],
-              )
-            ],
+      body: Column(
+        children: [
+          Container(
+            height: 350,
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 300,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text("P"),
+                      Text("N"),
+                      Text("M"),
+                      Text("L"),
+                      Text("K"),
+                      Text("J"),
+                      Text("H"),
+                      Text("G"),
+                      Text("F"),
+                      Text("E"),
+                      Text("D"),
+                      Text("C"),
+                      Text("B"),
+                      Text("A"),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    Container(
+                      //color: Colors.grey.shade400,
+                      height: 300,
+                      width: 310,
+                      child: GridView.count(
+                          crossAxisSpacing: 0,
+                          shrinkWrap: true,
+                          crossAxisCount: 18,
+                          mainAxisSpacing: 4.55,
+                          children: List.generate(
+                              252,
+                              (index) => Center(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        if (index == selectedIndex &&
+                                            isSelected == true) {
+                                          setState(() {
+                                            selectedIndex = 0;
+                                            isSelected = false;
+                                            seatsNum = 0;
+                                            price = 10000 * seatsNum;
+                                          });
+                                        } else {
+                                          setState(() {
+                                            selectedIndex = index;
+                                            isSelected = true;
+                                            seatsNum++;
+                                            price = 10000 * seatsNum;
+                                          });
+
+                                          debugPrint(
+                                              'Seat: ${selectedIndex + 1}');
+                                        }
+                                        debugPrint('Seat: ${selectedIndex}');
+                                      },
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                              color: index == selectedIndex &&
+                                                      isSelected
+                                                  ? Color.fromRGBO(
+                                                      103, 33, 255, 100)
+                                                  : Colors.white,
+                                              border: Border.all(
+                                                  color: Colors.black45,
+                                                  width: 1),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 1),
+                                          alignment: Alignment.center,
+                                          width: 14,
+                                          height: 14,
+                                          child: Text(
+                                            index < 18
+                                                ? '${index + 1}'
+                                                : index < 36
+                                                    ? '${index + 1 - 18}'
+                                                    : index < 54
+                                                        ? '${index + 1 - 36}'
+                                                        : index < 72
+                                                            ? '${index + 1 - 54}'
+                                                            : index < 90
+                                                                ? '${index + 1 - 72}'
+                                                                : index < 108
+                                                                    ? '${index + 1 - 90}'
+                                                                    : index <
+                                                                            126
+                                                                        ? '${index + 1 - 108}'
+                                                                        : index <
+                                                                                144
+                                                                            ? '${index + 1 - 126}'
+                                                                            : index < 162
+                                                                                ? '${index + 1 - 144}'
+                                                                                : index < 180
+                                                                                    ? '${index + 1 - 162}'
+                                                                                    : index < 198
+                                                                                        ? '${index + 1 - 180}'
+                                                                                        : index < 216
+                                                                                            ? '${index + 1 - 198}'
+                                                                                            : index < 234
+                                                                                                ? '${index + 1 - 216}'
+                                                                                                : '${index + 1 - 234}',
+                                            style: TextStyle(fontSize: 8),
+                                            textAlign: TextAlign.center,
+                                          )),
+                                    ),
+                                  ))),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: EdgeInsets.only(left: 2),
+                  height: 300,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text("P"),
+                      Text("N"),
+                      Text("M"),
+                      Text("L"),
+                      Text("K"),
+                      Text("J"),
+                      Text("H"),
+                      Text("G"),
+                      Text("F"),
+                      Text("E"),
+                      Text("D"),
+                      Text("C"),
+                      Text("B"),
+                      Text("A"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          SizedBox(
+            height: 20,
+          ),
+
+          Container(
+            alignment: Alignment.topCenter,
+            margin: EdgeInsets.only(bottom: 40),
+            color: Colors.transparent,
+            transform: Matrix4.rotationX(180),
+            height: 40,
+            width: 300,
+            child: Stack(
+              children: <Widget>[
+                AspectRatio(
+                  aspectRatio: 320 / 41,
+                  child: CustomPaint(
+                    painter: CurveScreenPainter(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Container(
+          //   width: 250,
+          //   height: 20,
+          //   decoration: BoxDecoration(
+          //       color: Color.fromRGBO(103, 33, 255, 80),
+          //       border: Border.all(color: Colors.black45, width: 1),
+          //       borderRadius: BorderRadius.only(
+          //           topLeft: Radius.circular(10),
+          //           topRight: Radius.circular(10),
+          //           bottomLeft: Radius.circular(50),
+          //           bottomRight: Radius.circular(50))),
+          // ),
+          Container(
+              margin: EdgeInsets.only(top: 40),
+              height: 70,
+              width: MediaQuery.of(context).size.width,
+              child: Row(children: [
+                Container(
+                    padding: EdgeInsets.only(top: 15, left: 15),
+                    height: 70,
+                    width: MediaQuery.of(context).size.width / 2,
+                    color: Color.fromRGBO(55, 32, 131, 40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("TSH $price",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w300)),
+                        SizedBox(
+                          height: 3,
+                        ),
+                        Text("$seatsNum Selected",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300))
+                      ],
+                    )),
+                Container(
+                  alignment: Alignment.center,
+                  height: 70,
+                  width: MediaQuery.of(context).size.width / 2,
+                  color: Color.fromRGBO(103, 33, 255, 100),
+                  child: Text(
+                    "CHECKOUT",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w300),
+                  ),
+                ),
+              ]))
+        ],
       ),
     );
+  }
+}
+
+class CurveScreenPainter extends CustomPainter {
+  var strokeWidth = 8.0;
+  var offset = 10.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint();
+    paint.color = Colors.purple;
+    paint.style = PaintingStyle.stroke;
+    paint.isAntiAlias = true;
+    paint.strokeCap = StrokeCap.round;
+    paint.strokeWidth = strokeWidth;
+
+    var path = Path();
+    path.moveTo(offset, size.height - offset);
+    path.quadraticBezierTo(size.width / 2, -size.height + offset,
+        size.width - offset, size.height - offset);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class CurvePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint();
+    paint.color = Colors.green[800]!;
+    paint.style = PaintingStyle.fill;
+
+    var path = Path();
+    path.lineTo(size.width, size.height);
+
+    path.moveTo(0, size.height * 0.25);
+    path.quadraticBezierTo(
+        size.width / 2, size.height / 2, size.width, size.height * 0.25);
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }
