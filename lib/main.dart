@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cinemaapp/models/movie_images.dart';
+import 'package:cinemaapp/views/paymet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -425,7 +426,6 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                 color: Colors.white,
                 child: const Center(child: CupertinoActivityIndicator()));
           } else {
-            debugPrint('Received Movie id: ${widget.movieId}');
             MovieDetail movieDetail = snapshot.data!;
             return Scaffold(
               body: Stack(
@@ -435,7 +435,7 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                       child: CachedNetworkImage(
                         imageUrl:
                             'https://image.tmdb.org/t/p/original${movieDetail.backdropPath}',
-                        height: MediaQuery.of(context).size.height / 2.5,
+                        height: MediaQuery.of(context).size.height / 2.7,
                         width: double.infinity,
                         fit: BoxFit.cover,
                         placeholder: (context, url) =>
@@ -454,7 +454,7 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                           elevation: 0,
                         ),
                         Container(
-                          padding: EdgeInsets.only(top: 25),
+                          padding: EdgeInsets.only(top: 8),
                           child: GestureDetector(
                             onTap: () async {
                               final youtueUrl =
@@ -518,7 +518,9 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                     children: [
                                       Text(
                                         "RELEASE DATE",
-                                        style: TextStyle(color: Colors.black45),
+                                        style: TextStyle(
+                                            color: Colors.black45,
+                                            fontWeight: FontWeight.w500),
                                       ),
                                       Text(
                                         movieDetail.releaseDate!,
@@ -540,7 +542,8 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                         '${movieDetail.runtime!.toString()} MINS',
                                         style: TextStyle(
                                             color: Color.fromRGBO(
-                                                232, 22, 103, 75)),
+                                                232, 22, 103, 75),
+                                            fontWeight: FontWeight.w500),
                                       )
                                     ],
                                   ),
@@ -550,7 +553,9 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                     children: [
                                       Text(
                                         "BUDGET",
-                                        style: TextStyle(color: Colors.black45),
+                                        style: TextStyle(
+                                            color: Colors.black45,
+                                            fontWeight: FontWeight.w500),
                                       ),
                                       Text(
                                         '\$${movieDetail.budget!.toString()}',
@@ -560,6 +565,19 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                       )
                                     ],
                                   ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                children: const [
+                                  Text("Cast:",
+                                      style: TextStyle(
+                                          color: Colors.black45,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16)),
+                                  Text(" to implement feature soon")
                                 ],
                               ),
                               SizedBox(
@@ -578,7 +596,12 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                               SizedBox(
                                 height: 10,
                               ),
-                              Text("SREENSHOTS"),
+                              Text(
+                                "SREENSHOTS",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black45),
+                              ),
                               FutureBuilder<List<Backdrops>>(
                                   future:
                                       apiService.movieImages(widget.movieId),
@@ -603,7 +626,7 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                                   GestureDetector(
                                                     onLongPress: () async {
                                                       final screenUrl =
-                                                          'https://image.tmdb.org/t/p/w500${backs[index].filePath}';
+                                                          'https://image.tmdb.org/t/p/original${backs[index].filePath}';
 
                                                       if (await canLaunch(
                                                           screenUrl)) {
@@ -692,10 +715,15 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
   //         .toList();
 
   bool isReserved = false;
+  List<int> reserved = [15, 22];
 
   bool isSelected = false;
 
   int selectedIndex = 0;
+
+  int moviePrice = 12000;
+
+  List<int> selectedIndexes = [];
 
   int seatsNum = 0;
   int price = 0;
@@ -714,14 +742,50 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
       body: Column(
         children: [
           Container(
-            height: 350,
-            margin: EdgeInsets.symmetric(horizontal: 10),
-            color: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            height: 50,
+            width: double.infinity,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(children: const [
+                  Icon(
+                    Icons.check_box_outline_blank,
+                  ),
+                  Text("Availabe"),
+                ]),
+                Row(children: [
+                  Container(
+                      width: 15,
+                      height: 15,
+                      color: Color.fromRGBO(55, 32, 131, 20)),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Text("Selected"),
+                ]),
+                Row(children: [
+                  Container(width: 15, height: 15, color: Colors.red[300]),
+                  SizedBox(
+                    width: 6,
+                  ),
+                  Text("Sold Out"),
+                ])
+              ],
+            ),
+          ),
+          Container(
+            alignment: Alignment.center,
+            margin: EdgeInsets.only(bottom: 30, top: 5),
+            height: 300,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
+                  width: 2,
+                ),
+                Container(
                   height: 300,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -747,7 +811,6 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                 Column(
                   children: [
                     Container(
-                      //color: Colors.grey.shade400,
                       height: 300,
                       width: 310,
                       child: GridView.count(
@@ -760,34 +823,47 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                               (index) => Center(
                                     child: GestureDetector(
                                       onTap: () {
-                                        if (index == selectedIndex &&
-                                            isSelected == true) {
+                                        if (reserved.contains(index)) {
+                                          showDialog(
+                                              context: context,
+                                              builder: (contex) => AlertDialog(
+                                                    actionsAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    actions: [
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                                  context),
+                                                          child: Text("Close"))
+                                                    ],
+                                                    content: Text(
+                                                        "Seat Taken Please Select Another Seat",
+                                                        textAlign:
+                                                            TextAlign.center),
+                                                    contentTextStyle: TextStyle(
+                                                        color: Colors.black),
+                                                  ));
+                                        } else if (selectedIndexes
+                                            .contains(index)) {
                                           setState(() {
-                                            selectedIndex = 0;
-                                            isSelected = false;
-                                            seatsNum = 0;
-                                            price = 10000 * seatsNum;
+                                            selectedIndexes.remove(index);
                                           });
                                         } else {
                                           setState(() {
-                                            selectedIndex = index;
-                                            isSelected = true;
-                                            seatsNum++;
-                                            price = 10000 * seatsNum;
+                                            selectedIndexes.add(index);
                                           });
-
-                                          debugPrint(
-                                              'Seat: ${selectedIndex + 1}');
                                         }
-                                        debugPrint('Seat: ${selectedIndex}');
                                       },
                                       child: Container(
                                           decoration: BoxDecoration(
-                                              color: index == selectedIndex &&
-                                                      isSelected
-                                                  ? Color.fromRGBO(
-                                                      103, 33, 255, 100)
-                                                  : Colors.white,
+                                              color: reserved.contains(index)
+                                                  ? Colors.red[200]
+                                                  : selectedIndexes
+                                                          .contains(index)
+                                                      ? Color.fromRGBO(
+                                                          103, 33, 255, 100)
+                                                      : Colors.white,
                                               border: Border.all(
                                                   color: Colors.black45,
                                                   width: 1),
@@ -837,7 +913,6 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                   ],
                 ),
                 Container(
-                  padding: EdgeInsets.only(left: 2),
                   height: 300,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -860,16 +935,16 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                     ],
                   ),
                 ),
+                SizedBox(
+                  width: 2,
+                ),
               ],
             ),
           ),
-          SizedBox(
-            height: 20,
-          ),
+
+          Expanded(child: Container()),
 
           Container(
-            alignment: Alignment.topCenter,
-            margin: EdgeInsets.only(bottom: 40),
             color: Colors.transparent,
             transform: Matrix4.rotationX(180),
             height: 40,
@@ -911,7 +986,7 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("TSH $price",
+                        Text("TSH ${moviePrice * selectedIndexes.length}",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -919,24 +994,32 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                         SizedBox(
                           height: 3,
                         ),
-                        Text("$seatsNum Selected",
+                        Text("${selectedIndexes.length} Selected",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w300))
                       ],
                     )),
-                Container(
-                  alignment: Alignment.center,
-                  height: 70,
-                  width: MediaQuery.of(context).size.width / 2,
-                  color: Color.fromRGBO(103, 33, 255, 100),
-                  child: Text(
-                    "CHECKOUT",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w300),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PaymentScreen()));
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 70,
+                    width: MediaQuery.of(context).size.width / 2,
+                    color: Color.fromRGBO(103, 33, 255, 100),
+                    child: Text(
+                      "CHECKOUT",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300),
+                    ),
                   ),
                 ),
               ]))
