@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors, unrelated_type_equality_checks
 
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cinemaapp/models/movie_images.dart';
@@ -93,28 +95,28 @@ class _MyAppState extends State<MyApp> {
                                 height: 5,
                               ),
                               GenreShowcase(),
-                              Container(
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(
-                                          color: Colors.black45, width: 1),
-                                      borderRadius: BorderRadius.circular(10)),
-                                  height: 40,
-                                  width: 120,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Text("Buy Ticket",
-                                          style:
-                                              TextStyle(color: Colors.black45)),
-                                      Padding(
-                                        padding: EdgeInsets.only(left: 8.0),
-                                        child: Icon(Icons.movie_creation,
-                                            color: Colors.black45),
-                                      )
-                                    ],
-                                  )),
+                              // Container(
+                              //     alignment: Alignment.center,
+                              //     decoration: BoxDecoration(
+                              //         color: Colors.white,
+                              //         border: Border.all(
+                              //             color: Colors.black45, width: 1),
+                              //         borderRadius: BorderRadius.circular(10)),
+                              //     height: 40,
+                              //     width: 120,
+                              //     child: Row(
+                              //       mainAxisAlignment: MainAxisAlignment.center,
+                              //       children: const [
+                              //         Text("Buy Ticket",
+                              //             style:
+                              //                 TextStyle(color: Colors.black45)),
+                              //         Padding(
+                              //           padding: EdgeInsets.only(left: 8.0),
+                              //           child: Icon(Icons.movie_creation,
+                              //               color: Colors.black45),
+                              //         )
+                              //       ],
+                              //     )),
                             ],
                           ),
                         ],
@@ -137,7 +139,7 @@ class _KappaWidgetState extends State<KappaWidget> {
         future: apiService.getTopRatedMovies(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
+            return SizedBox(
                 height: 200,
                 child: const Center(child: CupertinoActivityIndicator()));
           } else {
@@ -209,7 +211,7 @@ class _GenreWidgetState extends State<GenreWidget> {
         future: apiService.getGenreList(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
+            return SizedBox(
                 height: 35,
                 child: const Center(child: CupertinoActivityIndicator()));
           } else {
@@ -288,7 +290,7 @@ class _GenreShowcaseState extends State<GenreShowcase> {
           future: apiService.getMoviesByGenre(selectedGenre!),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
+              return SizedBox(
                   height: 200,
                   child: const Center(child: CupertinoActivityIndicator()));
             } else {
@@ -570,15 +572,23 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                               SizedBox(
                                 height: 10,
                               ),
-                              Row(
-                                children: const [
-                                  Text("Cast:",
-                                      style: TextStyle(
-                                          color: Colors.black45,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16)),
-                                  Text(" to implement feature soon")
-                                ],
+
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text.rich(
+                                  TextSpan(children: [
+                                    TextSpan(
+                                        text: 'CAST: ',
+                                        style: TextStyle(
+                                            color: Colors.black45,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15)),
+                                    TextSpan(
+                                        text: movieDetail.castList!.join(', '))
+                                  ]),
+                                  overflow: TextOverflow.visible,
+                                  textAlign: TextAlign.start,
+                                ),
                               ),
                               SizedBox(
                                 height: 5,
@@ -667,10 +677,14 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                         Expanded(child: Container()),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SeatSelectorView()));
+                            showDialog(
+                                context: context,
+                                builder: (context) => Dialog(
+                                        child: Material(
+                                      elevation: 0,
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: BookDetainScreen(),
+                                    )));
                           },
                           child: Container(
                               alignment: Alignment.center,
@@ -785,7 +799,7 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                 SizedBox(
                   width: 2,
                 ),
-                Container(
+                SizedBox(
                   height: 300,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -810,7 +824,7 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                 ),
                 Column(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 300,
                       width: 310,
                       child: GridView.count(
@@ -912,7 +926,7 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                     ),
                   ],
                 ),
-                Container(
+                SizedBox(
                   height: 300,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1078,5 +1092,183 @@ class CurvePainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+class BookDetainScreen extends StatefulWidget {
+  const BookDetainScreen({Key? key}) : super(key: key);
+
+  @override
+  _BookDetainScreenState createState() => _BookDetainScreenState();
+}
+
+class _BookDetainScreenState extends State<BookDetainScreen> {
+  int? selectedTimeIndex;
+  int? selectedQualityIndex;
+  int? selectedCinemaIndex;
+
+  List<String> times = ['19:30', '20:30', '21:30', '22:00'];
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(bottom: 30),
+      height: 400,
+      width: 100,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 20,
+          ),
+          Text("Watch Time".toUpperCase(),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black45)),
+          Container(
+            height: 80,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            child: GridView.count(
+                physics: NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                childAspectRatio: 300 / 180,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 5,
+                shrinkWrap: true,
+                children: List.generate(
+                    4,
+                    (index) => GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedTimeIndex = index;
+                            });
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: index == selectedTimeIndex
+                                    ? Colors.black45
+                                    : Colors.white,
+                                border: Border.all(color: Colors.black45),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            child: Text(
+                              times[index],
+                              style: TextStyle(
+                                  color: index == selectedTimeIndex
+                                      ? Colors.white
+                                      : Colors.black45),
+                            ),
+                          ),
+                        ))),
+          ),
+          Text("Quality".toUpperCase(),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black45)),
+          Container(
+            height: 80,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            child: GridView.count(
+                physics: NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                childAspectRatio: 100 / 30,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 5,
+                shrinkWrap: true,
+                children: List.generate(
+                    2,
+                    (index) => GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedQualityIndex = index;
+                            });
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black45),
+                                color: index == selectedQualityIndex
+                                    ? Colors.black45
+                                    : Colors.white,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            child: Text(
+                              index == 0 ? '2D' : '3D',
+                              style: TextStyle(
+                                color: index == selectedQualityIndex
+                                    ? Colors.white
+                                    : Colors.black45,
+                              ),
+                            ),
+                          ),
+                        ))),
+          ),
+          Text("Cinema".toUpperCase(),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black45)),
+          Container(
+            height: 80,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            child: GridView.count(
+                physics: NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                childAspectRatio: 100 / 40,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 5,
+                shrinkWrap: true,
+                children: List.generate(
+                    3,
+                    (index) => GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedCinemaIndex = index;
+                            });
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black45),
+                                color: index == selectedCinemaIndex
+                                    ? Colors.black45
+                                    : Colors.white,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            child: Text(
+                              index == 0
+                                  ? 'MCITY'
+                                  : index == 1
+                                      ? 'DFM'
+                                      : 'AURA',
+                              style: TextStyle(
+                                  color: index == selectedCinemaIndex
+                                      ? Colors.white
+                                      : Colors.black45),
+                            ),
+                          ),
+                        ))),
+          ),
+          Expanded(child: Container()),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SeatSelectorView()));
+            },
+            child: Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black45),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10)),
+              height: 40,
+              width: 100,
+              child: Text(
+                "BOOK",
+                style: TextStyle(color: Colors.black45),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 }

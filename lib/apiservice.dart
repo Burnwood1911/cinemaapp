@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:cinemaapp/models/genre.dart';
 import 'package:cinemaapp/models/movie.dart';
 import 'package:cinemaapp/models/movie_images.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -69,6 +68,7 @@ class ApiService {
 
       MovieDetail movieDetail = MovieDetail.fromJson(jsonDecode(response.body));
       movieDetail.trailerId = await getYoutubeId(movieId);
+      movieDetail.castList = await getCasts(movieId);
 
       return movieDetail;
     } catch (error, stack) {
@@ -82,9 +82,10 @@ class ApiService {
           .get(Uri.parse('$baseUrl/movie/$id/videos?api_key=$apiKey'));
 
       var youtubeId = jsonDecode(response.body)['results'][0]['key'];
+
       return youtubeId;
-    } catch (error, stack) {
-      throw Exception('Exception occured: $error with stacktrace: $stack');
+    } catch (e) {
+      return '';
     }
   }
 
@@ -101,6 +102,24 @@ class ApiService {
           backdrops.map((e) => Backdrops.fromJson(e)).toList();
 
       return backdroplist;
+    } catch (error, stack) {
+      throw Exception('Exception occured: $error with stacktrace: $stack');
+    }
+  }
+
+  Future<List> getCasts(int id) async {
+    try {
+      List<String> finalCast = [];
+      final response = await http
+          .get(Uri.parse('$baseUrl/movie/$id/credits?api_key=$apiKey'));
+
+      var casts = await jsonDecode(response.body)['cast'];
+
+      casts.forEach((element) {
+        finalCast.add(element['name']);
+      });
+
+      return finalCast;
     } catch (error, stack) {
       throw Exception('Exception occured: $error with stacktrace: $stack');
     }

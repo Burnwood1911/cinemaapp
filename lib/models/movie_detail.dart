@@ -26,6 +26,7 @@ class MovieDetail {
   int? voteCount;
 
   String? trailerId;
+  List<dynamic>? castList;
 
   MovieDetail({
     this.adult,
