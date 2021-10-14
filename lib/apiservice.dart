@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cinemaapp/models/actor.dart';
 import 'package:cinemaapp/models/genre.dart';
 import 'package:cinemaapp/models/movie.dart';
 import 'package:cinemaapp/models/movie_images.dart';
@@ -54,6 +55,21 @@ class ApiService {
       List<Movie> movielist = movies.map((e) => Movie.fromJson(e)).toList();
 
       return movielist;
+    } catch (error, stack) {
+      throw Exception('Exception occured: $error with stacktrace: $stack');
+    }
+  }
+
+  Future<List<Results>> getTopActors() async {
+    try {
+      final response = await http
+          .get(Uri.parse('$baseUrl/trending/person/week?api_key=$apiKey'));
+
+      var actors = await jsonDecode(response.body)['results'] as List;
+
+      List<Results> actorlist = actors.map((e) => Results.fromJson(e)).toList();
+
+      return actorlist;
     } catch (error, stack) {
       throw Exception('Exception occured: $error with stacktrace: $stack');
     }
