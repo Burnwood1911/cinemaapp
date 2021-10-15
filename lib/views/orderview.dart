@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class OrderTab extends StatefulWidget {
@@ -31,9 +32,48 @@ class _OrderTabState extends State<OrderTab> {
                   margin: const EdgeInsets.only(
                     top: 15,
                   ),
-                  child: Container()),
+                  child: testWidget()),
             ],
           ),
         ));
+  }
+
+  Widget testWidget() {
+    List<Widget> myWids = [];
+
+    var blue = Container(
+      height: 10,
+      width: 10,
+      color: Colors.blue,
+    );
+
+    var red = Container(
+      height: 10,
+      width: 10,
+      color: Colors.red,
+    );
+    var orange = Container(
+      height: 10,
+      width: 10,
+      color: Colors.orange,
+    );
+
+    String seats =
+        "UUUAAARRRUUUAAARRRUUUAAARRRUUUAAARRRUUUAAARRRUUUAUUUAAARRRUU";
+
+    for (int i = 0; i < seats.length;) {
+      if (seats[i].contains("U")) {
+        myWids.add(red);
+        i++;
+      } else if (seats[i].contains("A")) {
+        myWids.add(blue);
+        i++;
+      } else if (seats[i].contains("R")) {
+        myWids.add(orange);
+        i++;
+      }
+    }
+    debugPrint(myWids.length.toString());
+    return Container();
   }
 }

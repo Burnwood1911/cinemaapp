@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:cinemaapp/views/orderview.dart';
 import 'package:cinemaapp/views/paymet.dart';
+import 'package:cinemaapp/views/search_view.dart';
 import 'package:cinemaapp/widgets/genrecategory.dart';
 import 'package:cinemaapp/widgets/genreshowcase.dart';
 import 'package:cinemaapp/widgets/kappa.dart';
@@ -66,12 +67,16 @@ class _MyAppState extends State<MyApp> {
                     fontWeight: FontWeight.bold),
               ),
               actions: [
-                Container(
-                    margin: const EdgeInsets.only(right: 15),
-                    child: const Icon(
-                      Icons.logout,
-                      color: Colors.black54,
-                    ))
+                Builder(builder: (context) {
+                  return IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SearchTab()));
+                      },
+                      icon: Icon(Icons.search, color: Colors.black45));
+                })
               ],
             ),
             body: LayoutBuilder(builder: (context, boxconstraints) {

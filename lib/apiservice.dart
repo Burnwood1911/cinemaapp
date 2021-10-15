@@ -4,6 +4,7 @@ import 'package:cinemaapp/models/actor.dart';
 import 'package:cinemaapp/models/genre.dart';
 import 'package:cinemaapp/models/movie.dart';
 import 'package:cinemaapp/models/movie_images.dart';
+import 'package:cinemaapp/models/search.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -138,6 +139,22 @@ class ApiService {
       return finalCast;
     } catch (error, stack) {
       throw Exception('Exception occured: $error with stacktrace: $stack');
+    }
+  }
+
+  Future<List<SearchResults>> getSearchResults(String query) async {
+    try {
+      final response = await http.get(
+          Uri.parse('$baseUrl/search/movie?api_key=$apiKey&&query=$query'));
+
+      var searches = await jsonDecode(response.body)['results'] as List;
+
+      List<SearchResults> searchlist =
+          searches.map((e) => SearchResults.fromJson(e)).toList();
+
+      return searchlist;
+    } catch (error, stack) {
+      throw Exception('Exception occured: $error with stacktrace $stack');
     }
   }
 }
