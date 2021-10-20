@@ -100,17 +100,17 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                 ],
                               ),
                               const SizedBox(
-                                height: 5,
+                                height: 4,
                               ),
                               SizedBox(
-                                  height: 35,
+                                  height: 48,
                                   child: Text(
                                     movieDetail.overview!,
-                                    maxLines: 2,
+                                    maxLines: 4,
                                     overflow: TextOverflow.ellipsis,
                                   )),
                               const SizedBox(
-                                height: 10,
+                                height: 8,
                               ),
                               Row(
                                 mainAxisAlignment:
@@ -190,9 +190,6 @@ class _MovieDetalViewState extends State<MovieDetalView> {
                                   overflow: TextOverflow.visible,
                                   textAlign: TextAlign.start,
                                 ),
-                              ),
-                              const SizedBox(
-                                height: 5,
                               ),
                               const SizedBox(
                                 height: 10,

@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, unrelated_type_equality_checks
 
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -25,8 +26,8 @@ void main() {
 }
 
 ApiService apiService = ApiService();
-ValueNotifier valueNotifier = ValueNotifier(0);
-int? selectedGenre = 28;
+
+StreamController<int> genreController = StreamController<int>.broadcast();
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);

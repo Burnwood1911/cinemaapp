@@ -16,10 +16,11 @@ class GenreShowcase extends StatefulWidget {
 class _GenreShowcaseState extends State<GenreShowcase> {
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: valueNotifier,
-      builder: (context, child, value) => FutureBuilder<List<Movie>>(
-          future: apiService.getMoviesByGenre(selectedGenre!),
+    return StreamBuilder<int>(
+      initialData: 28,
+      stream: genreController.stream,
+      builder: (context, genresnapshot) => FutureBuilder<List<Movie>>(
+          future: apiService.getMoviesByGenre(genresnapshot.data!),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(

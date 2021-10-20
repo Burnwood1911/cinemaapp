@@ -142,10 +142,14 @@ class ApiService {
     }
   }
 
-  Future<List<SearchResults>> getSearchResults(String query) async {
+  Future<List<SearchResults>> getSearchResults(
+      String query, int selected) async {
+    String finalUrl = selected == 0
+        ? '$baseUrl/search/movie?api_key=$apiKey&&query=$query'
+        : '$baseUrl/search/tv?api_key=$apiKey&&query=$query';
+
     try {
-      final response = await http.get(
-          Uri.parse('$baseUrl/search/movie?api_key=$apiKey&&query=$query'));
+      final response = await http.get(Uri.parse(finalUrl));
 
       var searches = await jsonDecode(response.body)['results'] as List;
 
