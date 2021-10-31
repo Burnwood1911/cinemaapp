@@ -4,9 +4,9 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
-
+import 'dart:convert';
 import 'package:cinemaapp/views/orderview.dart';
-import 'package:cinemaapp/views/paymet.dart';
+import 'package:http/http.dart' as http;
 import 'package:cinemaapp/views/search_view.dart';
 import 'package:cinemaapp/widgets/genrecategory.dart';
 import 'package:cinemaapp/widgets/genreshowcase.dart';
@@ -18,10 +18,13 @@ import 'package:cinemaapp/apiservice.dart';
 
 import 'package:flutter/painting.dart';
 import 'package:cinemaapp/utils/painter.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 
 import 'models/actor.dart';
 
 void main() {
+  stripe.Stripe.publishableKey =
+      'pk_test_51JqiiDB8WVxp7KfwjFD3fzSinEGH8AnbkvFjRg5jMkCiuuXrTahohDiiGq54c04ltwJVWj44bryuDnGI51zn9ZX700e34XDcAD';
   runApp(const MyApp());
 }
 
@@ -501,11 +504,36 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
                       ],
                     )),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PaymentScreen()));
+                  onTap: () async {
+                    var ultra = await http.post(
+                        Uri.parse(
+                          'https://api.stripe.com/v1/payment_intents',
+                        ),
+                        headers: {
+                          'Authorization':
+                              'Bearer sk_test_51JqiiDB8WVxp7KfwHhllcfBamgahUjZizuPqnUFvxozbAkpIPMLg08CVbdBMsKLKqj7APPUX72Xhndu3pxmv4w2b00Rr1iCPaS',
+                          'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: {
+                          'amount': '10000',
+                          'currency': 'usd'
+                        });
+
+                    var finalsecret = jsonDecode(ultra.body)['client_secret'];
+
+                    await stripe.Stripe.instance.initPaymentSheet(
+                      paymentSheetParameters:
+                          stripe.SetupPaymentSheetParameters(
+                              paymentIntentClientSecret: finalsecret,
+                              applePay: true,
+                              googlePay: true,
+                              merchantCountryCode: 'US',
+                              merchantDisplayName: "alex"),
+                    );
+
+                    setState(() {});
+
+                    displayPaymentSheet();
                   },
                   child: Container(
                     alignment: Alignment.center,
@@ -525,6 +553,14 @@ class _SeatSelectorViewState extends State<SeatSelectorView> {
         ],
       ),
     );
+  }
+
+  Future<void> displayPaymentSheet() async {
+    try {
+      await stripe.Stripe.instance.presentPaymentSheet();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }
 
